@@ -9,34 +9,39 @@ var node_hpit = require('./node_hpit');
 
 var hpit = new node_hpit;
 
-//get a plugin
+**Plugin**
 
-var plugin = hpit.plugin;
 
-//spin up the plugin
+  1. get a plugin
 
-hpit.start(plugin);
+  var plugin = hpit.plugin;
+  
+  2. spin up the plugin
+  
+  hpit.start(plugin);
+  
+  3. tear down the plugin
+  
+  hpit.stop(plugin);
+  
+  4. check the status of the plugin
+  
+  hpit.status(plugin);
+  
+**Tutor**
 
-//tear down the plugin
-
-hpit.stop(plugin);
-
-//check the status of the plugin
-
-hpit.status(plugin);
-
-//get a tutor
+1. get a tutor
 
 var tutor = hpit.tutor;
 
-//spin up the tutor
+2. spin up the tutor
 
 hpit.start(tutor);
 
-//tear down the tutor
+3. tear down the tutor
 
 hpit.stop(tutor);
 
-//check the status of the tutor
+4. check the status of the tutor
 
 hpit.status(tutor);

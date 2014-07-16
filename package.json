@@ -1,0 +1,23 @@
+{
+  "main": "index",
+  "name": "node_hpit",
+  "description": "client library for hpit",
+  "version": "0.0.1",
+  "dependencies": {
+    "request": "^2.37.0"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/tutorgen/HPIT-node-client"
+  },
+  "author": "Jian Sun",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/tutorgen/HPIT-node-client/issues"
+  },
+  "homepage": "https://github.com/tutorgen/HPIT-node-client"
+}

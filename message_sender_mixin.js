@@ -1,4 +1,5 @@
-var utils = require('./utils')();
+var utils = require('./utils');
+utils = new utils;
 var request_mixin = require('./request_mixin');
 function message_sender_mixin() {
 	_poll_responses = utils._poll_responses;

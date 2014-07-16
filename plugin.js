@@ -1,5 +1,6 @@
 var message_sender_mixin = require('./message_sender_mixin');
-var utils = require('./utils')();
+var utils = require('./utils');
+utils = new utils;
 function plugin() {
 	var _poll = utils._poll;
 	var _handle_transaction = utils._handle_transaction;

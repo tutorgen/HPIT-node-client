@@ -1,5 +1,5 @@
-var tutor = require('./tutor');
-var plugin = require('./plugin');
+var tutor = require('./lib/tutor');
+var plugin = require('./lib/plugin');
 function hpit() {
 	//private functions
 	this.plugin = new plugin;

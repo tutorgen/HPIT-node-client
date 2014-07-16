@@ -4,11 +4,11 @@ node_hpit
 node.js library for hpit
 
 How to use:
-'''
+
 var node_hpit = require('./node_hpit');
 
 var hpit = new node_hpit;
-'''
+
 **Plugin**
 
 

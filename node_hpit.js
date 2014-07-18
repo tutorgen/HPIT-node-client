@@ -1,9 +1,13 @@
 var tutor = require('./lib/tutor');
 var plugin = require('./lib/plugin');
 function hpit() {
-	//private functions
-	this.plugin = new plugin;
-	this.tutor = new tutor;
+
+	this.create_plugin = function(entity_id, api_key, wildcard_callback) {
+		return new plugin(entity_id, api_key, wildcard_callback);
+	};
+	this.create_tutor = function(entity_id, api_key, callback, attrs) {
+		return new tutor(entity_id, api_key, callback, attrs);
+	};
 	this.start = function(entity) {
 		entity.start();
 	};

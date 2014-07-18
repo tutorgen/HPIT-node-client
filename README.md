@@ -14,7 +14,7 @@ var hpit = new node_hpit;
 
   1. get a plugin
 
-    var plugin = hpit.plugin;
+    var plugin = hpit.create_plugin(entity_id, api_key, wildcard_callback);
   
   2. spin up the plugin
   
@@ -32,7 +32,7 @@ var hpit = new node_hpit;
 
   1. get a tutor
 
-    var tutor = hpit.tutor;
+    var tutor = hpit.create_tutor(entity_id, api_key, callback, attrs);
 
   2. spin up the tutor
 

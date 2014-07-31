@@ -1,7 +1,10 @@
 var tutor = require('./lib/tutor');
 var plugin = require('./lib/plugin');
 function hpit() {
-
+	//in case users forget to use new keyword
+	if (!(this instanceof hpit)) {
+		return new hpit();
+	}
 	this.create_plugin = function(entity_id, api_key, wildcard_callback) {
 		return new plugin(entity_id, api_key, wildcard_callback);
 	};

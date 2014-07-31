@@ -1,21 +1,19 @@
 var hpit = require('../index');
 hpit = new hpit();
+
 function student_activity_logging_plugin() {
 	this.post_connect = function(next) { 
-		self.ee.once('student_activity_logging_plugin', function() {
-			next();
-		});
+		var self = this;
 		self.subscribe({
 			activity_logging: self.log_student_activity_callback
-		}, 'student_activity_logging_plugin');
+		}, next);
 	};
 
 	this.log_student_activity_callback = function(message, next) {
 		console.log(message);
 		next();
 	};
-	/////
-	var self = this;
+
 }
 
 

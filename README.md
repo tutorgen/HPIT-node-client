@@ -5,43 +5,21 @@ node.js library for hpit
 
 How to use:
 
-var node_hpit = require('./node_hpit');
-
-var hpit = new node_hpit;
+var hpit = require('./node_hpit');
 
 **Plugin**
 
 
-  1. get a plugin
+  1. get the constructor of a plugin
 
-    var plugin = hpit.create_plugin(entity_id, api_key, wildcard_callback);
+    hpit.plugin
   
-  2. spin up the plugin
-  
-    hpit.start(plugin);
-  
-  3. tear down the plugin
-  
-    hpit.stop(plugin);
-  
-  4. check the status of the plugin
-  
-    hpit.status(plugin);
   
 **Tutor**
 
-  1. get a tutor
+  1. get the constructor of a tutor
 
-    var tutor = hpit.create_tutor(entity_id, api_key, callback, attrs);
+    hpit.tutor
 
-  2. spin up the tutor
-
-    hpit.start(tutor);
-
-  3. tear down the tutor
-
-    hpit.stop(tutor);
-
-  4. check the status of the tutor
-
-    hpit.status(tutor);
+Important:
+  Checkout the examples folder to learn how to write a tutor or a plugin.

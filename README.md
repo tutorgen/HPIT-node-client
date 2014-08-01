@@ -21,5 +21,6 @@ var hpit = require('./node_hpit');
 
     hpit.tutor
 
-Important:
+*Important*
+
   Checkout the examples folder to learn how to write a tutor or a plugin.

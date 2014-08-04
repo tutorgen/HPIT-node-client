@@ -1,7 +1,7 @@
 var hpit = require('../index');
 
-function student_activity_logging_tutor(entity_id, api_key, callback, attrs) {
-	hpit.tutor.call(this, entity_id, api_key, callback, attrs);
+function student_activity_logging_tutor(entity_id, api_key, callback, options) {
+	hpit.tutor.call(this, entity_id, api_key, callback, options);
 }
 
 

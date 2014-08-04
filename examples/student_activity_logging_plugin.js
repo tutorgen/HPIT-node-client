@@ -1,6 +1,7 @@
 var hpit = require('../index');
 
-function student_activity_logging_plugin(entity_id, api_key, wildcard_callback) {
+function student_activity_logging_plugin(entity_id, api_key, options) {
+	var opts = options || {};
 	hpit.plugin.call(this, entity_id, api_key, wildcard_callback);
 }
 

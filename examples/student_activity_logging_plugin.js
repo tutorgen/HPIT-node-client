@@ -1,8 +1,7 @@
 var hpit = require('../index');
 
 function student_activity_logging_plugin(entity_id, api_key, options) {
-	var opts = options || {};
-	hpit.plugin.call(this, entity_id, api_key, wildcard_callback);
+	hpit.plugin.call(this, entity_id, api_key, options);
 }
 
 
@@ -15,6 +14,8 @@ student_activity_logging_plugin.prototype.post_connect = function(next) {
 };
 student_activity_logging_plugin.prototype.log_student_activity_callback = function(message, next) {
 	console.log(message);
-	next();
+	if (next) {
+		next();
+	}	
 };
 module.exports = student_activity_logging_plugin;

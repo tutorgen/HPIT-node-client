@@ -4,6 +4,7 @@
   "description": "client library for hpit",
   "version": "0.0.1",
   "dependencies": {
+    "chai": "^1.9.1",
     "events": "^1.0.1",
     "nimble": "0.0.2",
     "request": "^2.37.0",

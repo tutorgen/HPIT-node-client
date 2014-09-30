@@ -1,4 +1,4 @@
-# HPIT (Hyper-Personalized Intelligent Tutor) Python Client Libraries
+# HPIT (Hyper-Personalized Intelligent Tutor) Nodejs  Client Libraries
 
 ## What is HPIT?
 
@@ -12,21 +12,10 @@ and should be considered unstable for everyday use.
 
 ## Installing the client libraries
 
-1. To install the client libraries make sure you are using the most recent version of Python 3.4.
-    - On Ubuntu: `sudo apt-get install python3 python-virtualenv`
-    - On Mac w/ Homebrew: `brew install python3 pyenv-virtualenv`
-
-2. Setup a virtual environment: `virtualenv -p python3 env`
-3. Active the virtual environment: `source env/bin/activate`
-4. Install the HPIT client libraries: `pip3 install hpitclient`
+1. Install nodejs: http://nodejs.org/download/
+2. Install the HPIT client libraries: `npm install hpitclient`
 
 You're all set to start using the libraries.
-
-## Running the test suite.
-
-1. Activate the virtual environment: `source env/bin/activate`
-2. Install the testing requirements: `pip3 install -r test_requirements.txt`
-3. Run the nose tests runner: `nosetests`
 
 ## Registering with HPIT
 
@@ -39,15 +28,14 @@ There are various settings which change the behavior of the client side librarie
 | name               | default                        | description                                |
 |--------------------|--------------------------------|--------------------------------------------|
 | HPIT_URL_ROOT      | 'https://www.hpit-project.org' | The URL of the HPIT server.                |
-| REQUESTS_LOG_LEVEL | 'debug'                        | The logging level of the requests library. |
 
 To override the clientside settings in your app do the following. You will need to override the HPIT
 URL if you are doing any local testing.
 
-```python
-    from hpitclient.settings import HpitClientSettings
-    settings = HpitClientSettings.settings()
-    settings.HPIT_URL_ROOT = 'http://127.0.0.1:8000'
+```javascript
+    (function(exports) {
+        exports.HPIT_URL_ROOT = 'https://www.hpit-project.org/';
+    })(typeof exports === 'undefined' ? this._ = this._ || {}: exports);
 ```
 
 ## Plugins
@@ -62,25 +50,21 @@ so if you lose it you'll need to generate a new one. Copy the Entity ID and API 
 
 To create a new plugin you'll need to derive from the Plugin class.
 
-```python
-from hpitclient import Plugin
+```javascript
+var hpit = require('../index');
+function student_activity_logging_plugin(entity_id, api_key, err_cb, options) {
+    hpit.plugin.call(this, entity_id, api_key, err_cb, options);
+}
 
-class MyPlugin(Plugin):
-
-    def __init__(self):
-        entity_id = 'YOUR_PLUGIN_ENTITY_ID' #eg. b417e82d-4153-4f87-8a11-8bb5c6bfaa00
-        api_key = 'YOUR_PLUGIN_API_KEY' #eg. ae29bd1b81a6064061eca875a8ff0a8d
-
-        #Call the parent class's init function
-        super().__init__(entity_id, api_key)
+student_activity_logging_plugin.prototype = Object.create(hpit.plugin.prototype);
 ```
 
 Calling the start method on the plugin will connect it to the server.
 
-```python
+```javascript
 
-my_plugin = MyPlugin()
-my_plugin.start()
+my_plugin = new student_activity_logging_plugin();
+my_plugin.start();
 ```
 
 Plugins are event driven. The start method connects to the server then starts an endless loop. There are
@@ -90,54 +74,29 @@ your plugin to listen to and the callback functions to call when your plugin rec
 
 Let's define one now:
 
-```python
-from hpitclient import Plugin
-
-class MyPlugin(Plugin):
-
-    def __init__(self):
-        ...
-
-    def post_connect(self):
-        super().post_connect()
-
-        #Subscribe to a message called 'echo'
-        self.subscribe(echo=self.my_echo_callback)
-
-    def my_echo_callback(self, message):
-        print(message['echo_text'])
+```javascript
+student_activity_logging_plugin.prototype.post_connect = function(next) {
+    var self = this;
+    self.subscribe({
+        activity_logging: self.log_student_activity_callback
+    }, next);
+};
+student_activity_logging_plugin.prototype.log_student_activity_callback = function(message, next) {
+    console.log(message);
+    if (next) next();	
+};
 ```
 
-The `self.subscribe` method takes a message name and a callable. In this case `echo` is the message name and
-`self.my_echo_callback` is the callback that will be called when a message of that name is sent to the plugin. It 
-then contacts the HPIT central router and tells it to start storing messages with that name of `echo` so this plugin
-can listen to and respond to those messages.
+The `self.subscribe` method takes a message name and a callable. In this case `activity_logging` is the message name and
+`self.log_student_activity_callback` is the callback that will be called when a message of that name is sent to the plugin. It then contacts the HPIT central router and tells it to start storing messages with that name of `activity_logging` so this plugin can listen to and respond to those messages.
 
-A message in HPIT consists of a message name, in this case `echo` and a payload. The payload can
+A message in HPIT consists of a message name, in this case `activity_logging` and a payload. The payload can
 have any arbitrary data in it that a tutor wishes to send. HPIT doesn't care about the kind of data
 it sends to plugins. It's the plugin operator's responsibility to do what it wants with the data
 that comes from the tutor.
 
-So now if a tutor sends a message like `"echo" -> {'echo_text' : "Hello World!"}` through HPIT this plugin
-will recieve that message and print it to the screen. If 'echo_text' isn't in the payload the callback would
-throw a KeyError exception so we might want to handle that.
-
-```python
-
-from hpitclient import Plugin
-
-class MyPlugin(Plugin):
-
-    def __init__(self):
-        ...
-
-    def post_connect(self):
-        ...
-
-    def my_echo_callback(self, message):
-        if 'echo_text' in message:
-            print(message['echo_text'])
-```
+So now if a tutor sends a message like `"activity_logging" -> {'text' : "Hello World!"}` through HPIT this plugin
+will recieve that message and print it to the console.
 
 In the inner loop of the start method a few things happen. The plugin asks the HPIT router server if any messages
 that it wants to listen to are queued to be sent to the plugin. Then if it recieves new messages it dispatches them
@@ -147,28 +106,14 @@ Plugins can also send responses back to the original sender of messages. To do s
 `self.send_response` function. All payloads come with the `message_id` specified so we can route responses appropriately.
 To send a response we'll need to slightly modify our code a bit.
 
-```python
-
-from hpitclient import Plugin
-
-class MyPlugin(Plugin):
-
-    def __init__(self):
-        ...
-
-    def post_connect(self):
-        ...
-
-    def my_echo_callback(self, message):
-        if 'echo_text' in message:
-            #Print the echo message
-            print(message['echo_text'])
-
-            #Send a response to the message sender 
-            my_response = {
-                'echo_response': message['echo_text']
-            }
-            self.send_response(message['message_id'], my_response)
+```javascript
+student_activity_logging_plugin.prototype.log_student_activity_callback = function(message, next) {
+    console.log(message);
+    var my_response = {
+        'echo_response': message['text'];
+    };
+    send_response(message['message_id'], my_response, next);
+};
 ```
 
 Now the original tutor or plugin who sent this message to your MyPlugin will get a response back
@@ -184,39 +129,26 @@ update a decision tree, or a knowledge graph, or etc, etc. The possibilities are
 
 Our plugin all put together now looks like:
 
-```python
-from hpitclient import Plugin
+```javascript
+var hpit = require('../hpitclient');
 
-class MyPlugin(Plugin):
+function student_activity_logging_plugin(entity_id, api_key, err_cb, options) {
+    hpit.plugin.call(this, entity_id, api_key, err_cb, options);
+}
+student_activity_logging_plugin.prototype = Object.create(hpit.plugin.prototype);
+student_activity_logging_plugin.prototype.post_connect = function(next) {
+    var self = this;
+    self.subscribe({
+        activity_logging: self.log_student_activity_callback
+    }, next);
+};
+student_activity_logging_plugin.prototype.log_student_activity_callback = function(message, next) {
+    console.log(message);
+    if (next) next();	
+};
 
-    def __init__(self):
-        entity_id = 'YOUR_PLUGIN_ENTITY_ID' #eg. b417e82d-4153-4f87-8a11-8bb5c6bfaa00
-        api_key = 'YOUR_PLUGIN_API_KEY' #eg. ae29bd1b81a6064061eca875a8ff0a8d
-
-        #Call the parent class's init function
-        super().__init__(entity_id, api_key)
-
-    def post_connect(self):
-        super().post_connect()
-
-        #Subscribe to a message called 'echo'
-        self.subscribe(echo=self.my_echo_callback)
-
-    def my_echo_callback(self, message):
-        if 'echo_text' in message:
-            #Print the echo message
-            print(message['echo_text'])
-
-            #Send a response to the message sender 
-            my_response = {
-                'echo_response': message['echo_text']
-            }
-            self.send_response(message['message_id'], my_response)
-
-
-if __name__ == '__main__':
-    my_plugin = MyPlugin()
-    my_plugin.start()
+my_plugin = new student_activity_logging_plugin();
+my_plugin.start();
 ```
 
 ### Plugin Hooks
@@ -225,39 +157,32 @@ There are several hooks throughout the main event loop, where you can handle som
 that MUST be defined in a plugin is the `post_connect` hook. It is where you should define the messages and handlers
 that the plugin to listen and possibly respond to. 
 
-To stop the plugin from running you can either send a SIGTERM or SIGKILL signal to it eg. (`sudo kill -9 plugin_process_id`), OR
-you can press CTRL+C, OR you can return False from a hook. A signal, control+c, and returning False from a hook are considered
-graceful by the library and not only will the plugin terminate, it will send a disconnect message to the server, which will
-destory the authentication session against the server, and the HPIT server will continue storing messages for you to retrieve
-later.
+Disconnecting from the HPIT server will not cause HPIT to forget about you, it will continue storing messages for you, which you can recieve the next time you run your plugin. Isn't that nice. :)
 
-Disconnecting from the HPIT server will not cause HPIT to forget about you, it will continue storing messages for you, which
-you can recieve the next time you run your plugin. Isn't that nice. :)
+If you want HPIT to stop storing and routing messages to you, you can call the handy, dandy 'self.unsubscribe' method after connecting to HPIT. A good place to do this is in the `pre_disconnect` hook.
 
-If you want HPIT to stop storing and routing messages to you, you can call the handy, dandy 'self.unsubscribe' method after
-connecting to HPIT. A good place to do this is in the `pre_disconnect` hook.
+```javascript
+var hpit = require('../hpitclient');
 
-```python
-from hpitclient import Plugin
-
-class MyPlugin(Plugin):
-
-    def __init__(self):
-        pass
-
-    def post_connect(self):
-        super().post_connect()
-
-        #Subscribe to a message called 'echo'
-        self.subscribe(echo=self.my_echo_callback)
-
-    def pre_disconnect(self):
-        #Unsubscribe to the 'echo' message
-        self.unsubscribe('echo')
+function student_activity_logging_plugin(entity_id, api_key, err_cb, options) {
+    hpit.plugin.call(this, entity_id, api_key, err_cb, options);
+}
+student_activity_logging_plugin.prototype = Object.create(hpit.plugin.prototype);
+student_activity_logging_plugin.prototype.post_connect = function(next) {
+    var self = this;
+    self.subscribe({
+        activity_logging: self.log_student_activity_callback
+    }, next);
+};
+student_activity_logging_plugin.prototype.pre_connect = function(next) {
+    var self = this;
+    self.unsubscribe(['activity_logging'], next);
+};
 ```
+**About next
+The reason that a next callback is passed to almost all the functions defined is because of unpredictability of nodejs' event loop. Passing next callback gaurantees that all the hooks will be executed and finished in pre-defined order. 
 
-Here are some other places you can hook into the event loop. Returning False from any of them, will cause the event loop to
-terminate.
+Here are some other places you can hook into the event loop.
 
 Hook Name                   | Called When:
 --------------------------- | --------------------------------------------------------------------------
@@ -289,20 +214,19 @@ so if you lose it you'll need to generate a new one. Copy the Entity ID and API 
 
 To create a new tutor you'll need to derive from the Tutor class.
 
-```python
-from hpitclient import Tutor
-
-class MyTutor(Tutor):
-
-    def __init__(self):
-        entity_id = 'YOUR_PLUGIN_ENTITY_ID' #eg. b417e82d-4153-4f87-8a11-8bb5c6bfaa00
-        api_key = 'YOUR_PLUGIN_API_KEY' #eg. ae29bd1b81a6064061eca875a8ff0a8d
-
-        super().__init__(entity_id, api_key, self.main_callback)
-
-    def main_callback(self):
-        print("Main Callback Loop")
-        response = self.send('echo', {'test': 1234})
+```javascript
+var hpit = require('../hpitclient');
+function student_activity_logging_tutor(entity_id, api_key, callback, err_cb, options) {
+    hpit.tutor.call(this, entity_id, api_key, callback, err_cb, options);
+}
+student_activity_logging_tutor.prototype = Object.create(hpit.tutor.prototype);
+student_activity_logging_tutor.prototype.work = function() {
+    var activity = {subject: "I", verb: "made", object: "it"};
+    this.send(
+        message_name = "activity_logging",
+        payload = activity
+    );
+};
 ```
 
 Tutors differ from plugins in one major way, in their main event loop they call a callback function
@@ -310,22 +234,9 @@ which will be called during each iteration of the main event loop. This callback
 parameter in the init function. After calling the main callback function, the main event loop then
 polls HPIT for responses from plugins which you have sent messages to earlier.
 
-To send a message to HPIT and have that message routed to a specific plugin you can call the `self.send`
-method as we do above. Messages sent this way consist of an event name (in this case 'echo') and a dictionary
-of data. Optionally you can specify a response callback as we do below. All messages sent through HPIT are 
-multicast and every plugin which 'subscribes' to those messages will recieve them, including the echo plugin
-you created and registered with HPIT in the last tutorial.
-
-```python
-class MyTutor(Tutor):
-    ...
-
-    def main_callback(self):
-        response = self.send('echo', {'test': 1234}, self.response_callback)
-
-    def response_callback(self, response):
-        print(str(response))
-```
+To send a message to HPIT and have that message routed to a specific plugin you can call the `this.send`
+method as we do above. Messages sent this way consist of an event name (in this case 'activity_logging') and a dictionary of data. Optionally you can specify a response callback as we do below. All messages sent through HPIT are 
+multicast and every plugin which 'subscribes' to those messages will recieve them, including the student_activity_logging plugin you created and registered with HPIT in the last tutorial.
 
 When you send a message to HPIT you can specify a response callback to the send method. After the message is
 recieved and processed by a plugin, it may optionally send a response back. If it does the response will travel
@@ -350,36 +261,55 @@ Since multiply plugins may respond to the same message that you sent out, you ma
 of the response payload, as well as the message.reciever_entity_id to help filter the responses you actually
 want to handle. You can specify different callbacks for the same message, as well as a "global" callback for 
 one message. For example both:
-
-```python
-class mytutor(tutor):
-    ...
-
-    def main_callback(self):
-        response = self.send('echo', {'test': 1234}, self.response_callback)
-        response = self.send('echo_two', {'test': 1234}, self.response_callback)
-
-    def response_callback(self, response):
-        print(str(response))
+```javascript
+var hpit = require('../hpitclient');
+function student_activity_logging_tutor(entity_id, api_key, callback, err_cb, options) {
+    hpit.tutor.call(this, entity_id, api_key, callback, err_cb, options);
+}
+student_activity_logging_tutor.prototype = Object.create(hpit.tutor.prototype);
+student_activity_logging_tutor.prototype.work = function() {
+    var activity = {subject: "I", verb: "made", object: "it"};
+    var self = this;
+    this.send(
+        message_name = "activity_logging",
+        payload = activity,
+        callback = self.response_callback
+    );
+};
+student_activity_logging_tutor.prototype.response_callback = function() {
+    console.log(response);
+};
 ```
 
 AND
 
-```python
-class mytutor(tutor):
-    ...
-
-    def main_callback(self):
-        response = self.send('echo', {'test': 1234}, self.response_callback)
-        response = self.send('echo', {'test': 1234}, self.response_callback_two)
-
-    def response_callback(self, response):
-        print(str(response))
-
-    def response_callback_two(self, response):
-        logger.log(str(response))
+```javascript
+var hpit = require('../hpitclient');
+function student_activity_logging_tutor(entity_id, api_key, callback, err_cb, options) {
+    hpit.tutor.call(this, entity_id, api_key, callback, err_cb, options);
+}
+student_activity_logging_tutor.prototype = Object.create(hpit.tutor.prototype);
+student_activity_logging_tutor.prototype.work = function() {
+    var activity = {subject: "I", verb: "made", object: "it"};
+    var self = this;
+    this.send(
+        message_name = "activity_logging",
+        payload = activity,
+        callback = self.response_callback
+    );
+    this.send(
+        message_name = "activity_logging",
+        payload = activity,
+        callback = self.response_callback_two
+    );
+};
+student_activity_logging_tutor.prototype.response_callback = function() {
+    console.log(response);
+};
+student_activity_logging_tutor.prototype.response_callback_two = function() {
+    console.log(response);
+};
 ```
-
 are valid ways to handle responses from plugins. 
 
 That's really all their is to writing a tutor.

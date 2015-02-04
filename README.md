@@ -312,11 +312,10 @@ student_activity_logging_tutor.prototype.response_callback_two = function() {
 ```
 are valid ways to handle responses from plugins. 
 
-That's really all their is to writing a tutor.
+That's really all there is to writing a tutor.
 
 ## Active Plugins in Production
 
-Currently, there are only 2 plugins active on HPIT's production servers which you can query for information.
-These are the knowledge tracing plugin and the hint factory plugin. The knowledge tracing plugin is responsible
-for handling bayesian knowledge tracing, and the hint factory handle domain model generation and hint generation.
-Documentation on these two plugins are available from https://www.hpit-project.org/docs
+Currently, there are  3 plugins active on HPIT's production servers which can be queried for information.
+These are: knowledge tracing plugin; hint factory plugin; boredom detector plugin. The knowledge tracing plugin is responsible for handling bayesian knowledge tracing, the hint factory handle domain model generation and hint generation, and the boredom detctor plugin provides either a boredom indicator (true/false) or boredom percentage indicator. 
+Documentation on these plugins are available from https://www.hpit-project.org/docs

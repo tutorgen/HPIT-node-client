@@ -318,4 +318,5 @@ That's really all there is to writing a tutor.
 
 Currently, there are  3 plugins active on HPIT's production servers which can be queried for information.
 These are: knowledge tracing plugin; hint factory plugin; boredom detector plugin. The knowledge tracing plugin is responsible for handling bayesian knowledge tracing, the hint factory handle domain model generation and hint generation, and the boredom detctor plugin provides either a boredom indicator (true/false) or boredom percentage indicator. 
+
 Documentation on these plugins are available from https://www.hpit-project.org/docs
